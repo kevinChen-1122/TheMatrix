@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<style>
+    /* reset css */
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Noto Sans TC", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-weight: 100;
+        letter-spacing: 1.15px;
+        font-size: 13px;
+        background-color: black;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+        margin: 0;
+        padding: 0;
+    }
+
+    /* view css */
+    canvas {
+        display: block;
+    }
+</style>
+
+<body>
+    <canvas id="canvas"></canvas>
+</body>
+
+<script>
+    let canvasEl = document.getElementById('canvas');
+    canvasEl.width = window.innerWidth;
+    canvasEl.height = window.innerHeight;
+
+    function randomMsg() {
+        let result = '';
+        let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        let charactersLength = characters.length;
+        for (let i = 0; i < charactersLength; i++) {
+            const randomIdx = Math.floor(Math.random() * charactersLength);
+            result += characters.charAt(randomIdx);
+        }
+        return result;
+    }
+
+    function canvasRender(msg, color, speed) {
+        let ctx = canvasEl.getContext('2d');
+        let fontSize = 20;
+        // 計算可以顯示多少行
+        let totalLineNumber = Math.round(canvasEl.width / fontSize);
+        // 隨機挑選行數執行動畫
+        let randomNumber = Math.floor(Math.random() * totalLineNumber);
+        // 動畫執行的 x軸位置
+        let x = randomNumber * fontSize
+        // 字
+        let txt = msg.split("");
+        let txtIndex = 0;
+        let drops = [0];
+
+        // 自動往下的動畫設置
+        let autoRun = setInterval(() => {
+            txtRender(ctx, fontSize, drops, x, txt, txtIndex, autoRun, color);
+
+            if (txtIndex === txt.length - 1) {
+                txtIndex = 0;
+            } else {
+                txtIndex++;
+            }
+        }, speed);
+    }
+
+    function txtRender(ctx, fontSize, drops, x, txt, txtIndex, autoRun, color) {
+        // x軸位置從字體大小的 px 起始點開始
+        let xp = x < fontSize ? fontSize : x;
+
+        // 畫漸層效果
+        ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+        ctx.fillRect(xp, 0, fontSize, drops[0] * fontSize);
+        ctx.fillStyle = color;
+        // 設置字體
+        ctx.font = fontSize + "px arial";
+
+        for (let i = 0; i < drops.length; i++) {
+            let text = txt[txtIndex];
+
+            // canvas 畫字
+            ctx.fillText(text, xp, drops * fontSize);
+
+            // 超過畫布的高度，停止動畫並回收
+            if (drops[i] * fontSize > canvasEl.height * 1.25) {
+                drops[i] = 0;
+                clearInterval(autoRun);
+            }
+
+            drops[i]++;
+        }
+    }
+
+    const animateSpeed = Math.floor(Math.random() * 50) + 50;
+    setInterval(() => {
+        canvasRender(randomMsg(), '#0F0', animateSpeed)
+    }, 50);
+</script>
+
+</html>
